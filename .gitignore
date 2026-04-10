@@ -1,0 +1,16 @@
+venv/
+__pycache__/
+*.pyc
+*.log
+.env
+.DS_Store
+
+# ARC runtime and data files
+arc_memory.json
+arc_performance.json
+arc_state.json
+arc_events.db
+arc_events.db-journal
+
+# Backup files
+*.save
