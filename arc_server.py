@@ -128,12 +128,41 @@ def force_energy(energy: int = Query(None, ge=0, le=10)):
 # ARC ROI ENDPOINTS
 # ===============================
 
+from pydantic import BaseModel
+from datetime import datetime
+from typing import Optional
+
+class RevenueEntry(BaseModel):
+    service: str
+    amount: float
+    payment_method: str
+    customer_count: int = 1
+    location: str = "barbershop"
+    zone: str = "default"
+    notes: Optional[str] = ""
+
+
 @app.post("/revenue")
-def log_revenue(amount: float):
-    roi_engine.log_revenue(amount)
+def log_revenue(entry: RevenueEntry):
+    # Update ROI Engine
+    roi_engine.log_revenue(entry.amount)
+    roi_engine.log_guest(entry.customer_count)
+
+    record = {
+        "timestamp": datetime.utcnow().isoformat(),
+        "service": entry.service,
+        "amount": entry.amount,
+        "payment_method": entry.payment_method.lower(),
+        "customer_count": entry.customer_count,
+        "location": entry.location,
+        "zone": entry.zone,
+        "notes": entry.notes,
+    }
+
     return {
         "status": "success",
-        "amount_logged": amount
+        "message": "Revenue logged successfully",
+        "data": record
     }
 
 
