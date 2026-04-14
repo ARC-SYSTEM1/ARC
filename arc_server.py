@@ -124,6 +124,58 @@ def force_energy(energy: int = Query(None, ge=0, le=10)):
         "energy": state["energy"]
     }
 
+# -----------------------------
+# ARC Revenue Intelligence Layer
+# -----------------------------
+
+revenue_data = {
+    "total_revenue": 0.0,
+    "guest_count": 0
+}
+
+@app.post("/pos_sale")
+def pos_sale(amount: float = 25.0, guests: int = 1):
+    """
+    Simulates a POS transaction for pilot testing.
+    """
+    revenue_data["total_revenue"] += amount
+    revenue_data["guest_count"] += guests
+
+    revenue_per_guest = (
+        revenue_data["total_revenue"] / revenue_data["guest_count"]
+        if revenue_data["guest_count"] > 0 else 0
+    )
+
+    return {
+        "status": "success",
+        "transaction_amount": amount,
+        "guests": guests,
+        "total_revenue": revenue_data["total_revenue"],
+        "guest_count": revenue_data["guest_count"],
+        "revenue_per_guest": revenue_per_guest
+    }
+
+
+@app.get("/revenue")
+def get_revenue():
+    """
+    Returns current simulated revenue metrics.
+    """
+    guest_count = revenue_data["guest_count"]
+    total_revenue = revenue_data["total_revenue"]
+
+    revenue_per_guest = (
+        total_revenue / guest_count if guest_count > 0 else 0
+    )
+
+    return {
+        "total_revenue": total_revenue,
+        "guest_count": guest_count,
+        "revenue_per_guest": revenue_per_guest,
+        "revenue_per_hour": total_revenue  # Placeholder for pilot phase
+    }
+
+
 # ===============================
 # ARC ROI ENDPOINTS
 # ===============================
