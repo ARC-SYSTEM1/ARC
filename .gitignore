@@ -15,3 +15,4 @@ arc_events.db-journal
 
 # Backup files
 *.save
+arc_env/
