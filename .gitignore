@@ -16,3 +16,8 @@ arc_events.db-journal
 # Backup files
 *.save
 arc_env/
+.bash_history
+arc_env/
+__pycache__/
+*.pyc
+.env
