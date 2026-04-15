@@ -1,18 +1,35 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.responses import HTMLResponse
+from fastapi.templating import Jinja2Templates
 from arc_lights import lights_on
 from arc_roi import ARCROIEngine
-
-roi_engine = ARCROIEngine()
 
 import json
 import os
 import time
 
+# Initialize FastAPI app
 app = FastAPI()
 
+# Initialize templates
+templates = Jinja2Templates(directory="templates")
+
+# Initialize ROI engine
+roi_engine = ARCROIEngine()
+
+# File paths
 STATE_FILE = "/home/chadj0085/ARC/arc_state.json"
 MEMORY_FILE = "/home/chadj0085/ARC/arc_memory.json"
+
+# -------------------------------
+# DASHBOARD ROUTE
+# -------------------------------
+@app.get("/dashboard", response_class=HTMLResponse)
+async def dashboard(request: Request):
+    return templates.TemplateResponse(
+        "dashboard.html",
+        {"request": request}
+    )
 
 
 # -------------------------

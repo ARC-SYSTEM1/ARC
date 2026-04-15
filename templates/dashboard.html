@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>ARC Operator Dashboard</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <style>
+        body {
+            margin: 0;
+            font-family: "Segoe UI", Arial, sans-serif;
+            background: linear-gradient(135deg, #0b0f1a, #111827);
+            color: #ffffff;
+            text-align: center;
+        }
+
+        h1 {
+            font-size: 42px;
+            margin-top: 30px;
+        }
+
+        h2 {
+            color: #4ade80;
+            margin-bottom: 10px;
+        }
+
+        p.subtitle {
+            color: #9ca3af;
+            margin-bottom: 30px;
+        }
+
+        .container {
+            width: 90%;
+            max-width: 1100px;
+            margin: auto;
+        }
+
+        .card {
+            background: #111827;
+            border-radius: 12px;
+            padding: 25px;
+            margin: 20px 0;
+            box-shadow: 0 0 20px rgba(0,0,0,0.5);
+        }
+
+        .status {
+            font-size: 18px;
+            line-height: 1.8;
+        }
+
+        .intelligence {
+            padding: 15px;
+            border-radius: 8px;
+            background: #1f2937;
+            margin-top: 10px;
+        }
+
+        .intelligence.high {
+            background: #7f1d1d;
+            color: #fff;
+        }
+
+        .intelligence.medium {
+            background: #92400e;
+        }
+
+        .intelligence.low {
+            background: #065f46;
+        }
+
+        .button-group {
+            margin-top: 15px;
+        }
+
+        button {
+            padding: 12px 18px;
+            margin: 6px;
+            border: none;
+            border-radius: 8px;
+            background: #e5e7eb;
+            color: #000;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        button:hover {
+            background: #4ade80;
+            color: #000;
+        }
+
+        .roi-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .roi-card {
+            background: #1f2937;
+            padding: 20px;
+            border-radius: 10px;
+        }
+
+        .roi-card h3 {
+            margin: 0;
+            color: #4ade80;
+        }
+
+        .endpoints {
+            line-height: 1.8;
+            color: #9ca3af;
+        }
+
+        footer {
+            margin: 30px 0;
+            color: #6b7280;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>ARC Operator Dashboard</h1>
+    <p class="subtitle">Arena. Rhythm. Culture.</p>
+
+    <div class="container">
+
+        <!-- System Status -->
+        <div class="card">
+            <h2>System Status</h2>
+            <div class="status">
+                <p>Mode: <strong id="mode">Loading...</strong></p>
+                <p>Presence: <strong id="presence">0</strong></p>
+                <p>Activity: <strong id="activity">0</strong></p>
+                <p>Energy: <strong id="energy">0</strong></p>
+            </div>
+        </div>
+
+        <!-- ARC Intelligence -->
+        <div class="card">
+            <h2>ARC Intelligence</h2>
+            <div id="intelligenceBox" class="intelligence low">
+                <h3 id="decision">Loading...</h3>
+                <p id="reason"></p>
+                <p id="secondary"></p>
+                <p><strong id="priority"></strong></p>
+            </div>
+        </div>
+
+        <!-- Environment Controls -->
+        <div class="card">
+            <h2>Environment Controls</h2>
+            <div class="button-group">
+                <button onclick="trigger('/lights/on')">LIGHTS ON</button>
+                <button onclick="trigger('/lights/off')">LIGHTS OFF</button>
+                <button onclick="trigger('/arrival')">ARRIVAL</button>
+                <button onclick="trigger('/standby')">STANDBY</button>
+                <button onclick="trigger('/force_energy')">BOOST ENERGY</button>
+            </div>
+        </div>
+
+        <!-- ROI Intelligence -->
+        <div class="card">
+            <h2>ROI Intelligence</h2>
+            <div class="roi-grid">
+                <div class="roi-card">
+                    <h3 id="revenue">$0</h3>
+                    <p>Total Revenue</p>
+                </div>
+                <div class="roi-card">
+                    <h3 id="guests">0</h3>
+                    <p>Guest Count</p>
+                </div>
+                <div class="roi-card">
+                    <h3 id="revenuePerGuest">$0</h3>
+                    <p>Revenue per Guest</p>
+                </div>
+                <div class="roi-card">
+                    <h3 id="revenuePerHour">$0</h3>
+                    <p>Revenue per Hour</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- ARC Live Endpoints -->
+        <div class="card">
+            <h2>ARC Live Endpoints</h2>
+            <div class="endpoints">
+                <p>/arrival</p>
+                <p>/force_energy</p>
+                <p>/revenue</p>
+                <p>/guest</p>
+                <p>/roi</p>
+            </div>
+        </div>
+
+    </div>
+
+    <footer>
+        ARC Intelligence Platform © 2026
+    </footer>
+
+    <script>
+        async function fetchState() {
+            try {
+                const response = await fetch('/state');
+                const data = await response.json();
+
+                document.getElementById('mode').innerText = data.mode;
+                document.getElementById('presence').innerText = data.presence;
+                document.getElementById('activity').innerText = data.activity;
+                document.getElementById('energy').innerText = data.energy;
+
+                updateIntelligence(data.energy);
+            } catch (error) {
+                console.error("Error fetching state:", error);
+            }
+        }
+
+        function updateIntelligence(energy) {
+            const decision = document.getElementById('decision');
+            const reason = document.getElementById('reason');
+            const secondary = document.getElementById('secondary');
+            const priority = document.getElementById('priority');
+            const box = document.getElementById('intelligenceBox');
+
+            if (energy >= 7) {
+                decision.innerText = "Maintain Momentum";
+                reason.innerText = "Reason: Energy is strong";
+                secondary.innerText = "Secondary Action: None";
+                priority.innerText = "Priority: LOW";
+                box.className = "intelligence low";
+            } else if (energy >= 4) {
+                decision.innerText = "Stabilize Environment";
+                reason.innerText = "Reason: Energy is moderate";
+                secondary.innerText = "Secondary Action: Adjust lighting or music";
+                priority.innerText = "Priority: MEDIUM";
+                box.className = "intelligence medium";
+            } else {
+                decision.innerText = "Boost Energy";
+                reason.innerText = "Reason: Energy is low";
+                secondary.innerText = "Secondary Action: Start arena moment";
+                priority.innerText = "Priority: HIGH";
+                box.className = "intelligence high";
+            }
+        }
+
+        async function fetchROI() {
+            try {
+                const response = await fetch('/roi');
+                const data = await response.json();
+
+                document.getElementById('revenue').innerText = `$${data.total_revenue || 0}`;
+                document.getElementById('guests').innerText = data.guest_count || 0;
+                document.getElementById('revenuePerGuest').innerText =
+                    `$${(data.revenue_per_guest || 0).toFixed(2)}`;
+                document.getElementById('revenuePerHour').innerText =
+                    `$${(data.revenue_per_hour || 0).toFixed(2)}`;
+            } catch (error) {
+                console.error("Error fetching ROI:", error);
+            }
+        }
+
+        async function trigger(endpoint) {
+            await fetch(endpoint, { method: 'POST' });
+            fetchState();
+            fetchROI();
+        }
+
+        // Refresh every 3 seconds
+        setInterval(() => {
+            fetchState();
+            fetchROI();
+        }, 3000);
+
+        // Initial load
+        fetchState();
+        fetchROI();
+    </script>
+
+</body>
+</html>
